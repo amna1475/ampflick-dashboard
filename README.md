@@ -69,3 +69,11 @@ Everything currently reads from `src/data/mockData.js`. To connect a real backen
 - Sidebar collapses into a slide-over drawer below the `lg` breakpoint (hamburger menu in the top bar).
 - KPI cards reflow from 4 → 2 → 1 columns.
 - Charts and tables scroll horizontally on small screens where needed.
+
+## Develop By
+Amna Bibi 
+https://github.com/amna1475
+
+
+
+
