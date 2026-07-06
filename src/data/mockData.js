@@ -183,6 +183,29 @@ export const orders = [
 /** Recency-ordered list, most recent first — the source for the "Recent Orders" widget. */
 export const recentOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date))
 
+/** Customers derived from orders — grouped by email, with lifetime stats. */
+export const customers = Object.values(
+  orders.reduce((acc, o) => {
+    if (!acc[o.email]) {
+      acc[o.email] = {
+        name: o.customer,
+        email: o.email,
+        city: o.city,
+        orderCount: 0,
+        totalSpent: 0,
+        lastOrderDate: o.date,
+        statuses: [],
+      }
+    }
+    const c = acc[o.email]
+    c.orderCount += 1
+    c.totalSpent += o.amount
+    c.statuses.push(o.status)
+    if (new Date(o.date) > new Date(c.lastOrderDate)) c.lastOrderDate = o.date
+    return acc
+  }, {})
+).sort((a, b) => b.totalSpent - a.totalSpent)
+
 export const recentActivity = [
   { id: 1, type: 'delivered', title: 'Order #10248 Delivered', detail: 'Recipient: Zainab Malik, Lahore', time: '2 mins ago' },
   { id: 2, type: 'payment', title: 'Payment Confirmed', detail: 'Order #10250 - PKR 21,900', time: '45 mins ago' },

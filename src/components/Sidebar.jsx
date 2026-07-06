@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -11,11 +12,11 @@ import {
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { label: 'Orders', icon: ShoppingCart },
-  { label: 'Payments', icon: Wallet },
-  { label: 'Customers', icon: Users },
-  { label: 'Reports', icon: BarChart3 },
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
+  { label: 'Orders', icon: ShoppingCart, to: '/orders' },
+  { label: 'Payments', icon: Wallet, to: '/payments' },
+  { label: 'Customers', icon: Users, to: '/customers' },
+  { label: 'Reports', icon: BarChart3, to: '/reports' },
 ]
 
 export default function Sidebar({ open, onClose }) {
@@ -50,19 +51,23 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map(({ label, icon: Icon, active }) => (
-            <a
+          {NAV_ITEMS.map(({ label, icon: Icon, to }) => (
+            <NavLink
               key={label}
-              href="#"
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-brand-600 text-white shadow-card'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+              to={to}
+              end={to === '/'}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-brand-600 text-white shadow-card'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`
+              }
             >
               <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
               {label}
-            </a>
+            </NavLink>
           ))}
         </nav>
 
