@@ -2,20 +2,17 @@ import { Download } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import PaymentOverview from '../components/PaymentOverview'
 import StatusBadge from '../components/StatusBadge'
-import { recentOrders } from '../data/mockData'
+import { useOrders } from '../context/OrdersContext'
 
 export default function Payments() {
+  const { orders } = useOrders()
+  const recentOrders = [...orders].sort((a, b) => new Date(b.date) - new Date(a.date))
   return (
     <>
       <PageHeader
         title="Payments"
         subtitle="Reconcile payments received, pending, and refunded across all orders."
-        actions={
-          <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
-        }
+       
       />
 
       <PaymentOverview />
@@ -38,7 +35,7 @@ export default function Payments() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {recentOrders.map((o) => (
-                <tr key={o.id} className="hover:bg-slate-50/70 transition-colors">
+                <tr key={o._key} className="hover:bg-slate-50/70 transition-colors">
                   <td className="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">{o.id}</td>
                   <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{o.customer}</td>
                   <td className="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">{o.total}</td>

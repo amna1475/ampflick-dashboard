@@ -76,13 +76,6 @@ export default function Sidebar({ open, onClose }) {
             href="#"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900"
           >
-            <Settings className="h-[18px] w-[18px]" strokeWidth={2} />
-            Settings
-          </a>
-          <a
-            href="#"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-          >
             <HelpCircle className="h-[18px] w-[18px]" strokeWidth={2} />
             Help
           </a>

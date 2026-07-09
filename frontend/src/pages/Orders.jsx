@@ -1,33 +1,44 @@
-import { Download, PlusCircle, Package, Truck, Clock, RotateCcw } from 'lucide-react'
+import { Download, Package, Truck, Clock, RotateCcw } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import Filters from '../components/Filters'
 import OrdersTable from '../components/OrdersTable'
-import { recentOrders } from '../data/mockData'
-
-const SUMMARY = [
-  { label: 'Total Orders', value: recentOrders.length, icon: Package, tone: 'bg-brand-50 text-brand-600' },
-  { label: 'Delivered', value: recentOrders.filter((o) => o.status === 'Delivered').length, icon: Truck, tone: 'bg-emerald-50 text-emerald-600' },
-  { label: 'In Progress', value: recentOrders.filter((o) => ['In Transit', 'Processing'].includes(o.status)).length, icon: Clock, tone: 'bg-amber-50 text-amber-600' },
-  { label: 'Returned/Cancelled', value: recentOrders.filter((o) => ['Returned', 'Cancelled'].includes(o.status)).length, icon: RotateCcw, tone: 'bg-orange-50 text-orange-600' },
-]
+import { useOrders } from '../context/OrdersContext'
+import { useToast } from '../context/ToastContext'
+import { exportOrdersToCsv } from '../utils/exportCsv'
 
 export default function Orders() {
+  const { orders } = useOrders()
+  const { showToast } = useToast()
+
+  const SUMMARY = [
+    { label: 'Total Orders', value: orders.length, icon: Package, tone: 'bg-brand-50 text-brand-600' },
+    { label: 'Delivered', value: orders.filter((o) => o.status === 'Delivered').length, icon: Truck, tone: 'bg-emerald-50 text-emerald-600' },
+    { label: 'In Progress', value: orders.filter((o) => ['In Transit', 'Processing'].includes(o.status)).length, icon: Clock, tone: 'bg-amber-50 text-amber-600' },
+    { label: 'Returned/Cancelled', value: orders.filter((o) => ['Returned', 'Cancelled'].includes(o.status)).length, icon: RotateCcw, tone: 'bg-orange-50 text-orange-600' },
+  ]
+
+  function handleExport() {
+    const exported = exportOrdersToCsv(orders)
+    if (!exported) {
+      showToast('There are no orders to export yet.', 'error')
+      return
+    }
+    showToast('Orders exported successfully.')
+  }
+
   return (
     <>
       <PageHeader
         title="Orders"
         subtitle="Track, filter, and manage every order across all hubs."
         actions={
-          <>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-3.5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 shadow-card">
-              <PlusCircle className="h-4 w-4" />
-              Add Order
-            </button>
-          </>
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+          >
+            <Download className="h-4 w-4" />
+            Export
+          </button>
         }
       />
 

@@ -34,9 +34,9 @@ export default function RecentActivity() {
         })}
       </ol>
 
-      <button className="mt-2 w-full rounded-lg bg-brand-600 text-white text-sm font-semibold py-2.5 hover:bg-brand-700 transition-colors">
+      {/* <button className="mt-2 w-full rounded-lg bg-brand-600 text-white text-sm font-semibold py-2.5 hover:bg-brand-700 transition-colors">
         View Audit Log
-      </button>
+      </button> */}
     </div>
   )
 }
