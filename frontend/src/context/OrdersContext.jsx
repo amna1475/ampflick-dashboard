@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import { recentOrders as mockOrdersRaw } from '../data/mockData'
 import { ordersApi } from '../api/ordersApi'
+import { useAuth } from './AuthContext'
 
 const OrdersContext = createContext(null)
 
@@ -52,6 +53,7 @@ const DEFAULT_FILTERS = {
 }
 
 export function OrdersProvider({ children }) {
+  const { currentUser } = useAuth()
   const initialMockOrders = useMemo(() => mockOrdersRaw.map(mapMockOrder), [])
 
   // Demo orders are shown immediately; real DB orders load in afterwards and
@@ -74,6 +76,13 @@ export function OrdersProvider({ children }) {
   const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), [])
 
   const refresh = useCallback(async () => {
+    // /api/orders now requires being logged in — skip the call entirely
+    // (e.g. while sitting on the login page) instead of firing a request
+    // that's guaranteed to fail with a 401.
+    if (!currentUser) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -88,7 +97,7 @@ export function OrdersProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [currentUser])
 
   useEffect(() => {
     refresh()

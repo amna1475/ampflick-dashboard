@@ -1,6 +1,9 @@
 import { Search, Bell, Menu, Settings } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 export default function Topbar({ onMenuClick }) {
+  const { currentUser } = useAuth()
+
   return (
     <header className="sticky top-0 z-20 h-16 flex items-center justify-between gap-4 border-b border-slate-200 bg-white/80 backdrop-blur px-4 lg:px-6">
       <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -17,25 +20,18 @@ export default function Topbar({ onMenuClick }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-4">
-        {/* <button className="relative h-9 w-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50">
-          <Settings className="h-[18px] w-[18px]" />
-        </button>
-        <button className="relative h-9 w-9 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50">
-          <Bell className="h-[18px] w-[18px]" />
-          <span className="absolute top-1.5 right-2 h-1.5 w-1.5 rounded-full bg-red-500" />
-        </button> */}
-        <div className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-200">
-          <img
-            src="https://i.pravatar.cc/64?img=12"
-            alt="Asjad Haroon"
-            className="h-9 w-9 rounded-full object-cover"
-          />
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-slate-800">Alex Thompson</p>
-            <p className="text-xs text-slate-400">Admin</p>
+      <div className="flex items-center gap-2 sm:gap-4">
+        {currentUser && (
+          <div className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-200">
+            <div className="h-9 w-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm">
+              {currentUser.name.charAt(0)}
+            </div>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-slate-800">{currentUser.name}</p>
+              <p className="text-xs text-slate-400">{currentUser.role}</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   )

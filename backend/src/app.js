@@ -2,6 +2,8 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const orderRoutes = require('./routes/orderRoutes')
+const authRoutes = require('./routes/authRoutes')
+const userRoutes = require('./routes/userRoutes')
 const errorHandler = require('./middleware/errorHandler')
 
 const app = express()
@@ -17,6 +19,8 @@ app.get('/api/health', (req, res) => {
 })
 
 // Feature routes
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
 app.use('/api/orders', orderRoutes)
 
 // 404 handler for unknown routes

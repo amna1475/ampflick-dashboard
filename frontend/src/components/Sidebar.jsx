@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -9,7 +9,10 @@ import {
   HelpCircle,
   Truck,
   X,
+  UserCog,
+  LogOut,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
@@ -20,6 +23,14 @@ const NAV_ITEMS = [
 ]
 
 export default function Sidebar({ open, onClose }) {
+  const { isAdmin, logout } = useAuth()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <>
       {/* Mobile overlay */}
@@ -69,16 +80,34 @@ export default function Sidebar({ open, onClose }) {
               {label}
             </NavLink>
           ))}
+
+          {/* Only Admins can see/manage who has access to the portal */}
+          {isAdmin && (
+            <NavLink
+              to="/users"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-brand-600 text-white shadow-card'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`
+              }
+            >
+              <UserCog className="h-[18px] w-[18px]" strokeWidth={2} />
+              Users
+            </NavLink>
+          )}
         </nav>
 
         <div className="px-3 py-4 border-t border-slate-100 space-y-1">
-          <a
-            href="#"
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600"
           >
-            <HelpCircle className="h-[18px] w-[18px]" strokeWidth={2} />
-            Help
-          </a>
+            <LogOut className="h-[18px] w-[18px]" strokeWidth={2} />
+            Log Out
+          </button>
         </div>
       </aside>
     </>

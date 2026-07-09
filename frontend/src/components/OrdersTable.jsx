@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useOrders } from '../context/OrdersContext'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 import { exportOrdersToCsv } from '../utils/exportCsv'
 import StatusBadge from './StatusBadge'
 import OrderFormModal from './OrderFormModal'
@@ -63,6 +64,7 @@ export default function OrdersTable() {
     filters,
   } = useOrders()
   const { showToast } = useToast()
+  const { canWrite, canDelete } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -125,6 +127,7 @@ export default function OrdersTable() {
   }
 
   async function handleDelete(order) {
+    if (!canDelete) return
     const note = order.source === 'mock' ? ' (this is demo data — it will reappear on refresh)' : ''
     if (!window.confirm(`Delete order ${order.id} for ${order.customer}?${note}`)) return
     try {
@@ -198,14 +201,16 @@ export default function OrdersTable() {
           </div>
 
           <input ref={fileInputRef} type="file" accept=".csv" className="hidden" onChange={handleFileChange} />
-          <button
-            onClick={handleImportClick}
-            disabled={importing}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-          >
-            {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-            {importing ? 'Importing...' : 'Import CSV'}
-          </button>
+          {canWrite && (
+            <button
+              onClick={handleImportClick}
+              disabled={importing}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+            >
+              {importing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+              {importing ? 'Importing...' : 'Import CSV'}
+            </button>
+          )}
           <button
             onClick={handleExportCsv}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
@@ -213,13 +218,15 @@ export default function OrdersTable() {
             <Download className="h-3.5 w-3.5" />
             Export CSV
           </button>
-          <button
-            onClick={openAddOrder}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 shadow-card"
-          >
-            <PlusCircle className="h-3.5 w-3.5" />
-            Add Order
-          </button>
+          {canWrite && (
+            <button
+              onClick={openAddOrder}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 shadow-card"
+            >
+              <PlusCircle className="h-3.5 w-3.5" />
+              Add Order
+            </button>
+          )}
 
           <button
             onClick={() => setExpanded((v) => !v)}
@@ -324,20 +331,24 @@ export default function OrdersTable() {
                 <td className="px-4 py-3 text-slate-500 whitespace-nowrap font-mono text-xs">{o.tracking}</td>
                 <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-2.5">
-                    <button
-                      onClick={() => setEditingOrder(o)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
-                      title="Edit order"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(o)}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700"
-                      title="Delete order"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {canWrite && (
+                      <button
+                        onClick={() => setEditingOrder(o)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 hover:text-brand-700"
+                        title="Edit order"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(o)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700"
+                        title="Delete order"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                     <button
                       onClick={() => navigate(`/orders/${o._key}`)}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-slate-600"
