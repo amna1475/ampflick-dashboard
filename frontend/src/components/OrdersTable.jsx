@@ -16,9 +16,11 @@ import {
 import { useOrders } from '../context/OrdersContext'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
+import { useDeleteRequests } from '../context/DeleteRequestsContext'
 import { exportOrdersToCsv } from '../utils/exportCsv'
 import StatusBadge from './StatusBadge'
 import OrderFormModal from './OrderFormModal'
+import RequestDeleteModal from './RequestDeleteModal'
 
 const TABS = ['All', 'Delivered', 'In Transit', 'Processing', 'Returned', 'Cancelled']
 const COLLAPSED_COUNT = 5
@@ -64,7 +66,8 @@ export default function OrdersTable() {
     filters,
   } = useOrders()
   const { showToast } = useToast()
-  const { canWrite, canDelete } = useAuth()
+  const { canWrite, isAdmin } = useAuth()
+  const { requestDeletion } = useDeleteRequests()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -74,6 +77,7 @@ export default function OrdersTable() {
   const [expanded, setExpanded] = useState(false)
   const [editingOrder, setEditingOrder] = useState(null)
   const [importing, setImporting] = useState(false)
+  const [requestDeleteOrder, setRequestDeleteOrder] = useState(null)
 
   // Demo (mock) orders keep their original order; real DB orders are sorted newest-first within their own section.
   const mockSection = orders.filter((o) => o.source === 'mock')
@@ -127,15 +131,37 @@ export default function OrdersTable() {
   }
 
   async function handleDelete(order) {
-    if (!canDelete) return
-    const note = order.source === 'mock' ? ' (this is demo data — it will reappear on refresh)' : ''
-    if (!window.confirm(`Delete order ${order.id} for ${order.customer}?${note}`)) return
-    try {
-      await deleteOrder(order._key)
-      showToast('Order deleted successfully.')
-    } catch (err) {
-      showToast(err.message || 'Failed to delete order.', 'error')
+    // Demo/mock orders aren't stored anywhere real — removing them is always
+    // immediate, for everyone, since there's nothing for an Admin to approve.
+    if (order.source === 'mock') {
+      if (!window.confirm(`Delete order ${order.id} for ${order.customer}? (this is demo data — it will reappear on refresh)`)) return
+      try {
+        await deleteOrder(order._key)
+        showToast('Order deleted successfully.')
+      } catch (err) {
+        showToast(err.message || 'Failed to delete order.', 'error')
+      }
+      return
     }
+
+    if (isAdmin) {
+      if (!window.confirm(`Delete order ${order.id} for ${order.customer}?`)) return
+      try {
+        await deleteOrder(order._key)
+        showToast('Order deleted successfully.')
+      } catch (err) {
+        showToast(err.message || 'Failed to delete order.', 'error')
+      }
+      return
+    }
+
+    // Non-admin — don't delete directly, ask an Admin to approve it instead.
+    setRequestDeleteOrder(order)
+  }
+
+  async function handleSubmitDeleteRequest(reason) {
+    await requestDeletion(requestDeleteOrder._key, reason)
+    showToast('Deletion request sent to an Admin for approval.')
   }
 
   function handleExportCsv() {
@@ -340,11 +366,11 @@ export default function OrdersTable() {
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
                     )}
-                    {canDelete && (
+                    {canWrite && (
                       <button
                         onClick={() => handleDelete(o)}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700"
-                        title="Delete order"
+                        title={isAdmin ? 'Delete order' : 'Request deletion (needs Admin approval)'}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -387,6 +413,13 @@ export default function OrdersTable() {
         }}
         initialValues={editingOrder}
         title="Edit Order"
+      />
+
+      <RequestDeleteModal
+        open={!!requestDeleteOrder}
+        onClose={() => setRequestDeleteOrder(null)}
+        onSubmit={handleSubmitDeleteRequest}
+        orderLabel={requestDeleteOrder ? `${requestDeleteOrder.id} — ${requestDeleteOrder.customer}` : ''}
       />
     </div>
   )

@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Loader2, PackageSearch, Pencil, Trash2, Info } from 'lucide-react'
+import { ArrowLeft, Loader2, PackageSearch, Pencil, Trash2, Info, Send } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
 import StatusBadge from '../components/StatusBadge'
 import OrderFormModal from '../components/OrderFormModal'
+import RequestDeleteModal from '../components/RequestDeleteModal'
 import { useOrders } from '../context/OrdersContext'
 import { useToast } from '../context/ToastContext'
 import { useAuth } from '../context/AuthContext'
+import { useDeleteRequests } from '../context/DeleteRequestsContext'
 
 function Row({ label, value }) {
   return (
@@ -22,8 +24,10 @@ export default function OrderDetails() {
   const navigate = useNavigate()
   const { orders, loading, updateOrder, deleteOrder } = useOrders()
   const { showToast } = useToast()
-  const { canWrite, canDelete } = useAuth()
+  const { canWrite, isAdmin } = useAuth()
+  const { requestDeletion } = useDeleteRequests()
   const [editOpen, setEditOpen] = useState(false)
+  const [requestDeleteOpen, setRequestDeleteOpen] = useState(false)
 
   const order = orders.find((o) => o._key === id)
 
@@ -48,17 +52,39 @@ export default function OrderDetails() {
     }
   }
 
-  async function handleDelete() {
-    if (!canDelete) return
-    const note = order.source === 'mock' ? ' (this is demo data — it will reappear on refresh)' : ''
-    if (!window.confirm(`Delete order ${order.id}?${note}`)) return
-    try {
-      await deleteOrder(id)
-      showToast('Order deleted successfully.')
-      navigate('/orders')
-    } catch (err) {
-      showToast(err.message || 'Failed to delete order.', 'error')
+  async function handleDeleteClick() {
+    // Demo data: always immediate, nothing for an Admin to approve.
+    if (order.source === 'mock') {
+      if (!window.confirm(`Delete order ${order.id}? (this is demo data — it will reappear on refresh)`)) return
+      try {
+        await deleteOrder(id)
+        showToast('Order deleted successfully.')
+        navigate('/orders')
+      } catch (err) {
+        showToast(err.message || 'Failed to delete order.', 'error')
+      }
+      return
     }
+
+    if (isAdmin) {
+      if (!window.confirm(`Delete order ${order.id}?`)) return
+      try {
+        await deleteOrder(id)
+        showToast('Order deleted successfully.')
+        navigate('/orders')
+      } catch (err) {
+        showToast(err.message || 'Failed to delete order.', 'error')
+      }
+      return
+    }
+
+    // Non-admin — ask for approval instead of deleting directly.
+    setRequestDeleteOpen(true)
+  }
+
+  async function handleSubmitDeleteRequest(reason) {
+    await requestDeletion(id, reason)
+    showToast('Deletion request sent to an Admin for approval.')
   }
 
   return (
@@ -146,17 +172,17 @@ export default function OrderDetails() {
                 Edit Order
               </button>
             )}
-            {canDelete && (
+            {canWrite && (
               <button
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100"
               >
-                <Trash2 className="h-4 w-4" />
-                Delete Order
+                {isAdmin || order.source === 'mock' ? <Trash2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                {isAdmin || order.source === 'mock' ? 'Delete Order' : 'Request Deletion'}
               </button>
             )}
-            {!canDelete && (
-              <p className="text-xs text-slate-400">Only Admins can delete orders.</p>
+            {!isAdmin && order.source === 'db' && (
+              <p className="text-xs text-slate-400">Deletion requires Admin approval.</p>
             )}
           </div>
         </div>
@@ -180,6 +206,15 @@ export default function OrderDetails() {
             tracking: order.tracking,
           }}
           title="Edit Order"
+        />
+      )}
+
+      {order && (
+        <RequestDeleteModal
+          open={requestDeleteOpen}
+          onClose={() => setRequestDeleteOpen(false)}
+          onSubmit={handleSubmitDeleteRequest}
+          orderLabel={`${order.id} — ${order.customer}`}
         />
       )}
     </>
