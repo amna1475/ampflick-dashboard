@@ -6,10 +6,10 @@ export default function WeeklyOrdersChart() {
   const { weeklyOrders } = stats
 
   return (
-    <div className="rounded-2xl bg-white border border-slate-100 shadow-card p-5">
+    <div className="h-full flex flex-col rounded-2xl bg-white border border-slate-100 shadow-card p-5">
       <h3 className="font-semibold text-slate-800 text-sm">Weekly Orders</h3>
       <p className="text-xs text-slate-400 mt-0.5">Orders placed per day, last 7 days</p>
-      <div className="h-[220px] mt-2">
+      <div className="flex-1 mt-2 min-h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={weeklyOrders} barSize={26}>
             <CartesianGrid vertical={false} stroke="#f1f5f9" />

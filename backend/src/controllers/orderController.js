@@ -32,13 +32,30 @@ async function createOrder(req, res, next) {
 }
 
 // PUT /api/orders/:id
+// PUT /api/orders/:id
 async function updateOrder(req, res, next) {
   try {
+    const existing = await Order.findById(req.params.id)
+    if (!existing) return res.status(404).json({ message: 'Order not found' })
+
+    // Status pehli baar "Delivered" ho raha hai → deliveredAt stamp lagao
+    if (
+      req.body.status === 'Delivered' &&
+      existing.status !== 'Delivered' &&
+      !req.body.deliveredAt
+    ) {
+      req.body.deliveredAt = new Date()
+    }
+
+    // Status "Delivered" se hatt raha hai (e.g. galti se select ho gaya tha) → deliveredAt clear kardo
+    if (req.body.status && req.body.status !== 'Delivered' && existing.status === 'Delivered') {
+      req.body.deliveredAt = null
+    }
+
     const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     })
-    if (!order) return res.status(404).json({ message: 'Order not found' })
     res.json(order)
   } catch (err) {
     next(err)

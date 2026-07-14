@@ -3,7 +3,6 @@ const { nextOrderNumber } = require('./Counter')
 
 const orderSchema = new mongoose.Schema(
   {
-    // Human-friendly order number, e.g. "#10248" — auto-generated if not provided
     orderNumber: { type: String, unique: true },
 
     customer: { type: String, required: true, trim: true },
@@ -34,11 +33,13 @@ const orderSchema = new mongoose.Schema(
       default: 'COD',
     },
     tracking: { type: String, trim: true, default: '—' },
+
+    // NEW: jab order "Delivered" ho, tab yeh date save hoti hai
+    deliveredAt: { type: Date, default: null },
   },
-  { timestamps: true } // adds createdAt / updatedAt automatically
+  { timestamps: true }
 )
 
-// Auto-generate a friendly order number before saving, if one wasn't provided
 orderSchema.pre('save', async function (next) {
   if (this.orderNumber) return next()
   this.orderNumber = await nextOrderNumber()

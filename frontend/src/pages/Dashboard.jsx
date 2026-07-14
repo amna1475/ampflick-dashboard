@@ -61,15 +61,17 @@ export default function Dashboard() {
       <Filters />
 
       
-          <OrdersTable />
+      <OrdersTable />
 
       
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-        <div className="xl:col-span-2">
-          <WeeklyOrdersChart />
-        </div>
-        <RecentActivity />
-      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-stretch">
+  <div className="xl:col-span-2 h-full">
+    <WeeklyOrdersChart />
+  </div>
+  <div className="h-full">
+    <RecentActivity />
+  </div>
+</div>
     </>
   )
 }

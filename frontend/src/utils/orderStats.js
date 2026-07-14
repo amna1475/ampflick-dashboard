@@ -42,14 +42,20 @@ export function computeOrderStats(orders) {
   })
 
   // Monthly revenue — grouped chronologically by calendar month.
+  // Monthly revenue — sirf Delivered orders, grouped by the month they
+  // were actually delivered in (deliveredAt). Purane orders jinke paas
+  // deliveredAt nahi hai unke liye o.date par fallback karta hai.
   const monthBuckets = {}
   orders.forEach((o) => {
-    const d = new Date(o.date)
+    if (o.status !== 'Delivered') return // sirf actual generated revenue count ho
+
+    const d = new Date(o.deliveredAt || o.date)
     if (Number.isNaN(d.getTime())) return
     const key = `${d.getFullYear()}-${d.getMonth()}`
     if (!monthBuckets[key]) monthBuckets[key] = { sortDate: new Date(d.getFullYear(), d.getMonth(), 1), revenue: 0 }
     monthBuckets[key].revenue += o.amount || 0
   })
+  
   const monthlyRevenue = Object.values(monthBuckets)
     .sort((a, b) => a.sortDate - b.sortDate)
     .slice(-6) // last 6 months with any activity
