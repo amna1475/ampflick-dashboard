@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { nextOrderNumber } = require('./Counter')
 
 const orderSchema = new mongoose.Schema(
   {
@@ -40,8 +41,7 @@ const orderSchema = new mongoose.Schema(
 // Auto-generate a friendly order number before saving, if one wasn't provided
 orderSchema.pre('save', async function (next) {
   if (this.orderNumber) return next()
-  const count = await mongoose.model('Order').countDocuments()
-  this.orderNumber = `#${10247 + count + 1}`
+  this.orderNumber = await nextOrderNumber()
   next()
 })
 

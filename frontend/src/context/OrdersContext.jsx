@@ -2,6 +2,13 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback } 
 import { recentOrders as mockOrdersRaw } from '../data/mockData'
 import { ordersApi } from '../api/ordersApi'
 import { useAuth } from './AuthContext'
+import { computeOrderStats } from '../utils/orderStats'
+
+// How often to auto-refresh from the server (poll), so this dashboard stays
+// roughly in sync if another user adds/edits/deletes an order elsewhere.
+// This is a simple approximation of "real-time" — for instant push updates
+// you'd need WebSockets (e.g. Socket.io) instead.
+const POLL_INTERVAL_MS = 20000
 
 const OrdersContext = createContext(null)
 
@@ -75,7 +82,8 @@ export function OrdersProvider({ children }) {
   }, [])
   const resetFilters = useCallback(() => setFilters(DEFAULT_FILTERS), [])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts = {}) => {
+    const { silent = false } = opts
     // /api/orders now requires being logged in — skip the call entirely
     // (e.g. while sitting on the login page) instead of firing a request
     // that's guaranteed to fail with a 401.
@@ -83,7 +91,7 @@ export function OrdersProvider({ children }) {
       setLoading(false)
       return
     }
-    setLoading(true)
+    if (!silent) setLoading(true)
     setError(null)
     try {
       const docs = await ordersApi.list()
@@ -93,15 +101,25 @@ export function OrdersProvider({ children }) {
         return [...mockOnly, ...dbMapped]
       })
     } catch (err) {
-      setError(err.message || 'Could not load live orders from the server. Showing demo data only.')
+      // Don't overwrite the UI with a scary error banner for a silent
+      // background poll that failed — only surface errors from explicit loads.
+      if (!silent) setError(err.message || 'Could not load live orders from the server. Showing demo data only.')
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [currentUser])
 
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  // Poll in the background every POLL_INTERVAL_MS so this dashboard picks up
+  // changes made by other users without anyone needing to hit refresh manually.
+  useEffect(() => {
+    if (!currentUser) return
+    const intervalId = setInterval(() => refresh({ silent: true }), POLL_INTERVAL_MS)
+    return () => clearInterval(intervalId)
+  }, [currentUser, refresh])
 
   // Always goes to the real database, regardless of what's currently displayed.
   const addOrder = useCallback(async (order) => {
@@ -183,6 +201,9 @@ export function OrdersProvider({ children }) {
 
   const getOrderById = useCallback((key) => orders.find((o) => o._key === key), [orders])
 
+  // Recomputes automatically whenever `orders` changes — add/edit/delete or a poll refresh.
+  const stats = useMemo(() => computeOrderStats(orders), [orders])
+
   const value = useMemo(
     () => ({
       orders,
@@ -194,6 +215,7 @@ export function OrdersProvider({ children }) {
       deleteOrder,
       importOrders,
       getOrderById,
+      stats,
       addModalOpen,
       openAddOrder,
       closeAddOrder,
@@ -211,6 +233,7 @@ export function OrdersProvider({ children }) {
       deleteOrder,
       importOrders,
       getOrderById,
+      stats,
       addModalOpen,
       openAddOrder,
       closeAddOrder,

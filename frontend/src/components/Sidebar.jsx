@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -12,26 +12,26 @@ import {
   UserCog,
   LogOut,
   Inbox,
-} from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { useDeleteRequests } from "../context/DeleteRequestsContext";
+} from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { useDeleteRequests } from '../context/DeleteRequestsContext'
 
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/" },
-  { label: "Orders", icon: ShoppingCart, to: "/orders" },
-  { label: "Payments", icon: Wallet, to: "/payments" },
-  { label: "Customers", icon: Users, to: "/customers" },
-  { label: "Reports", icon: BarChart3, to: "/reports" },
-];
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
+  { label: 'Orders', icon: ShoppingCart, to: '/orders' },
+  { label: 'Payments', icon: Wallet, to: '/payments' },
+  { label: 'Customers', icon: Users, to: '/customers' },
+  { label: 'Reports', icon: BarChart3, to: '/reports' },
+]
 
 export default function Sidebar({ open, onClose }) {
-  const { isAdmin, logout } = useAuth();
-  const { pendingCount } = useDeleteRequests();
-  const navigate = useNavigate();
+  const { isAdmin, logout } = useAuth()
+  const { pendingCount } = useDeleteRequests()
+  const navigate = useNavigate()
 
   function handleLogout() {
-    logout();
-    navigate("/login", { replace: true });
+    logout()
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -45,8 +45,8 @@ export default function Sidebar({ open, onClose }) {
       )}
 
       <aside
-        className={`fixed z-40 inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 lg:static lg:translate-x-0 ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed z-40 inset-y-0 left-0 w-64 bg-white border-r border-slate-200 flex flex-col transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
+          open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100">
@@ -56,9 +56,7 @@ export default function Sidebar({ open, onClose }) {
             </div>
             <div className="leading-tight">
               <p className="font-bold text-slate-900 text-[15px]">Ampflick</p>
-              <p className="text-[11px] tracking-wide text-slate-400 font-medium">
-                LOGISTICS OPS
-              </p>
+              <p className="text-[11px] tracking-wide text-slate-400 font-medium">LOGISTICS OPS</p>
             </div>
           </div>
           <button className="lg:hidden text-slate-400" onClick={onClose}>
@@ -71,13 +69,13 @@ export default function Sidebar({ open, onClose }) {
             <NavLink
               key={label}
               to={to}
-              end={to === "/"}
+              end={to === '/'}
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-brand-600 text-white shadow-card"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? 'bg-brand-600 text-white shadow-card'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
             >
@@ -94,8 +92,8 @@ export default function Sidebar({ open, onClose }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-brand-600 text-white shadow-card"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? 'bg-brand-600 text-white shadow-card'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
             >
@@ -112,8 +110,8 @@ export default function Sidebar({ open, onClose }) {
               className={({ isActive }) =>
                 `flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-brand-600 text-white shadow-card"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    ? 'bg-brand-600 text-white shadow-card'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
             >
@@ -131,6 +129,7 @@ export default function Sidebar({ open, onClose }) {
         </nav>
 
         <div className="px-3 py-4 border-t border-slate-100 space-y-1">
+          
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600"
@@ -141,5 +140,5 @@ export default function Sidebar({ open, onClose }) {
         </div>
       </aside>
     </>
-  );
+  )
 }

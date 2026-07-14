@@ -1,17 +1,20 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts'
-import { weeklyOrders } from '../data/mockData'
+import { useOrders } from '../context/OrdersContext'
 
 export default function WeeklyOrdersChart() {
+  const { stats } = useOrders()
+  const { weeklyOrders } = stats
+
   return (
     <div className="rounded-2xl bg-white border border-slate-100 shadow-card p-5">
       <h3 className="font-semibold text-slate-800 text-sm">Weekly Orders</h3>
-      <p className="text-xs text-slate-400 mt-0.5">Orders placed per day, this week</p>
+      <p className="text-xs text-slate-400 mt-0.5">Orders placed per day, last 7 days</p>
       <div className="h-[220px] mt-2">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={weeklyOrders} barSize={26}>
             <CartesianGrid vertical={false} stroke="#f1f5f9" />
             <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-            <YAxis hide />
+            <YAxis hide allowDecimals={false} />
             <Tooltip
               cursor={{ fill: '#f8fafc' }}
               formatter={(value) => [value, 'Orders']}
