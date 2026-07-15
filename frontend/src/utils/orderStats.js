@@ -55,14 +55,15 @@ export function computeOrderStats(orders) {
     if (!monthBuckets[key]) monthBuckets[key] = { sortDate: new Date(d.getFullYear(), d.getMonth(), 1), revenue: 0 }
     monthBuckets[key].revenue += o.amount || 0
   })
-  
+
   const monthlyRevenue = Object.values(monthBuckets)
-    .sort((a, b) => a.sortDate - b.sortDate)
-    .slice(-6) // last 6 months with any activity
-    .map((b) => ({
-      month: b.sortDate.toLocaleString('en-US', { month: 'short' }),
-      revenue: Number((b.revenue / 1_000_000).toFixed(2)), // in millions, matching the chart's "Rs X M" style
-    }))
+  .sort((a, b) => a.sortDate - b.sortDate)
+  .slice(-6)
+  .map((b) => ({
+    month: b.sortDate.toLocaleString('en-US', { month: 'short' }),
+    revenue: Number((b.revenue / 1_000_000).toFixed(2)), // chart bar/line height ke liye (millions)
+    revenueRaw: b.revenue, // ← NEW: tooltip mein exact amount dikhane ke liye
+  }))
 
   // Weekly orders — count per day for the last 7 days (including today).
   const dayBuckets = []

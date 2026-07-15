@@ -36,7 +36,7 @@ export default function RevenueLineChart() {
               <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
               <YAxis hide domain={['dataMin - 0.5', 'dataMax + 0.5']} />
               <Tooltip
-                formatter={(value) => [`Rs ${value}M`, 'Revenue']}
+                formatter={(value, name, props) => [`Rs ${props.payload.revenueRaw.toLocaleString('en-PK')}`, 'Revenue']}
                 contentStyle={{ borderRadius: 10, border: '1px solid #e2e8f0', fontSize: 12 }}
               />
               <Area

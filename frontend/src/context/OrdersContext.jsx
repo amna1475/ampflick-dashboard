@@ -46,6 +46,7 @@ function mapDbOrder(doc) {
     method: doc.method,
     tracking: doc.tracking || '—',
     date: doc.createdAt || new Date().toISOString(),
+    deliveredAt: doc.deliveredAt || null,  // ✅ NEW — ab yeh forward hoga
     updatedAt: doc.updatedAt,
     source: 'db',
   }
